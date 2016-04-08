@@ -1,0 +1,14 @@
+build/
+xcuserdata
+*.xccheckout
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+Carthage/Build
+.idea/
+xcuserdata
+*.xccheckout
+Pods/
+*.xcworkspace
+Podfile.lock
