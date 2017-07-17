@@ -20,19 +20,19 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         //  html 文件路径
-        let requestURLString = NSBundle.mainBundle().pathForResource("JavaScriptCoreDemo", ofType: "html")
+        let requestURLString = Bundle.main.path(forResource: "JavaScriptCoreDemo", ofType: "html")
         
         if let requestURLString = requestURLString,
-            let requestURL = NSURL(string: requestURLString) {
+            let requestURL = URL(string: requestURLString) {
             //  加载 html
-            webView.loadRequest(NSURLRequest(URL: requestURL))
+            webView.loadRequest(URLRequest(url: requestURL))
         }
         
         webView.delegate = self
         
     }
     
-    @IBAction func rightBarButtonClick(sender: UIBarButtonItem) {
+    @IBAction func rightBarButtonClick(_ sender: UIBarButtonItem) {
         //  调用 JS
         callJS()
         
@@ -42,26 +42,26 @@ class ViewController: UIViewController {
     }
     
     func callJS() {
-        let params : [AnyObject]! = ["Hello JS! \(arc4random() % 10)"]
-        context?.objectForKeyedSubscript("fromNative").callWithArguments(params)
+        let params : [AnyObject]! = ["Hello JS! \(arc4random() % 10)" as AnyObject]
+        _ = context?.objectForKeyedSubscript("fromNative").call(withArguments: params)
     }
     
     func evaluateJS() {
-        context?.evaluateScript("alert('你运行了一段JS')")
+        _ = context?.evaluateScript("alert('你运行了一段JS')")
         
         //  也可以写成这样，效果同 callJS
         //        context?.evaluateScript("fromNative(' 你运行了一段JS')")
         
     }
     
-    func fromJS(paramFromJS:AnyObject?) {
+    func fromJS(_ paramFromJS:AnyObject?) {
         
-        Alert
+        _ = Alert
             .showIn(self)
-            .preferredStyle(.ActionSheet)
+            .preferredStyle(.actionSheet)
             .title("Call From JS")
             .message("检测到了来自 JS 的调用！")
-            .addAction("我知道了", style: .Cancel, handler: nil)
+            .addAction("我知道了", style: .cancel, handler: nil)
         
         guard let paramFromJS = paramFromJS else {
             return
@@ -75,17 +75,18 @@ class ViewController: UIViewController {
     func registerCallBack() {
         
         let callBack : @convention(block) (AnyObject?) -> Void = { [weak self] (paramFromJS) -> Void in
-            self?.fromJS(paramFromJS)
-            //            print(paramFromJS!.dynamicType)
+            DispatchQueue.main.async {
+                self?.fromJS(paramFromJS)
+            }
+            print(type(of: paramFromJS!))
         }
-        
-        context?.setObject(unsafeBitCast(callBack, AnyObject.self), forKeyedSubscript: "callNative")
+        context?.setObject(unsafeBitCast(callBack, to: AnyObject.self), forKeyedSubscript: "callNative" as NSCopying & NSObjectProtocol)
     }
 }
 
 extension ViewController : UIWebViewDelegate {
-    func webViewDidFinishLoad(webView: UIWebView) {
-        context = webView.valueForKeyPath("documentView.webView.mainFrame.javaScriptContext") as? JSContext
+    func webViewDidFinishLoad(_ webView: UIWebView) {
+        context = webView.value(forKeyPath: "documentView.webView.mainFrame.javaScriptContext") as? JSContext
         registerCallBack()
     }
 }

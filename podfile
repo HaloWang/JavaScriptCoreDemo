@@ -1,3 +1,5 @@
 use_frameworks!
-pod 'Halo'
-pod 'FangYuan'
+target 'JSCoreDemo' do
+	pod 'Halo'
+	pod 'FangYuan'
+end
